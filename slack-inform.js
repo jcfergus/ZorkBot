@@ -41,11 +41,31 @@ function startGame(tokens, context, cb) {
 
       cb(null, { text: "Starting a game of " + data.games[game].description });
     })
-
   });
 }
 
 function endGame(tokens, context, cb) {
+  var username = context.body.user_name;
+
+  context.storage.get(function(err, data) {
+    if (err) {
+      return cb(err);
+    }
+
+    if (data.saves[username] && data.saves[username].game && data.saves[username].state) {
+      var oldgame = data.saves[username].game;
+      delete(data.saves[username]);
+      return context.storage.set(data, function (err, result) {
+        if (err) {
+          return cb(error);
+        }
+        return cb(null, { text: "Game of " + oldgame + " ended!  Hope you weren't too attached to it!" } );
+      });
+    }
+    
+    return cb(null, { text: "No game to end!"} );
+  });
+  
   var game = "zork";
   return cb(null, { text: "Game ended!", game: game });
 }
