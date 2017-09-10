@@ -123,7 +123,14 @@ function getUserGame(context, cb) {
 }
 
 function processGameCommand(context, gamedata, cb) {
-  
+  if (gamedata.state == 'new') {
+    console.log("Starting a new game of: " + gamedata.game);
+    // Starting a new game.
+  } else {
+    console.log("Loading existing game of: " + gamedata.game);
+    // Sending a command to an existing game.
+  }
+  cb(null, null);
 }
 
 module.exports = function (context, done) {
