@@ -112,12 +112,13 @@ module.exports = function (context, done) {
     return doCommand(tokens, context, done);
   }
 
-  getUserGame(context, function (err, gamedata) {
+  return getUserGame(context, function (err, gamedata) {
     if (err) {
       return done(err);
     }
 
     if (!gamedata) {
+      console.log("User does not have an active game, ignoring message.");
       return done(null, null);  // If the user doesn't have an active game, we're done.
     }
 
@@ -127,9 +128,9 @@ module.exports = function (context, done) {
         } 
       
         // Handle result
-        return done(null, { text: 'Game response.'} ); 
+        return done(null, { text: '@' + context.body.user_name + ': Game response.'} ); 
     });
   });
 
-  done(null, { text: 'Ok!'} );
+  // done(null, { text: 'Ok!'} );
 };
