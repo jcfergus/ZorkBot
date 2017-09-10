@@ -8,7 +8,8 @@ var ifvms = require('ifvms');
 var commands = [ 'zbhelp', 'zblist', 'zbstart', 'zbrestart', 'zbend' ];
 
 function startGame(tokens, context, cb) {
-  if (!tokens[1]) {
+  var game = tokens[1];
+  if (!game) {
     return cb(null, { text: "No game specified." });
   }
 
@@ -23,11 +24,24 @@ function startGame(tokens, context, cb) {
       return cb(null, { text: "There is already a game of " + data.saves[username].game + " in progress.  Please end it with 'zbend' first."} );
     }
 
-    if (Object.keys(data.games).indexOf(tokens[1]) == -1) {
+    if (Object.keys(data.games).indexOf(game) == -1) {
       return cb(null, { text: "Invalid game name specified."});
     }
 
-    cb(null, { text: "Starting a game of " + data.games[tokens[1]].description });
+
+    data.saves[username] = {
+      state: "",
+      game: game
+    };
+
+    context.storage.set(data, function (err, result) {
+      if (err) {
+        return cb(err); // TODO: Should handle this per storage documentation, but for now... 
+      }
+
+      cb(null, { text: "Starting a game of " + data.games[game].description });
+    })
+
   });
 }
 
