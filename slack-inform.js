@@ -13,7 +13,7 @@ function startGame(tokens, context, cb) {
     return cb(null, { text: "No game specified." });
   }
 
-  var username = context.data.user_name;
+  var username = context.body.user_name;
 
   context.storage.get(function(err, data) {
     if (err) {
@@ -51,27 +51,28 @@ function endGame(tokens, context, cb) {
 }
 
 function doCommand(tokens, context, cb) {
+  var command = tokens[0];
   // This is a bit dirty but just want to get it working. 
-  if (tokens[0] === 'zbhelp') {
+  if (command === 'zbhelp') {
     return cb(null, { text: "Commands are: \n\nzbhelp - this!\n" +
     "zbstart [game] - start a new game of [game]\n"+
     "zblist - list available games\n" +
     "zbrestart - abort current game and restart\n" +
     "zbend - end current game\n\n" });
-  } else if (tokens[0] === 'zblist') {
+  } else if (command === 'zblist') {
     return context.storage.get( function(err, data) {
       return cb(null, { text: "Available games are: \n\n" +
       Object.keys(data.games).map(function (key) {
         return "Name: " + key + "   Description: " + data.games[key].description
       }).join("\n") + "\n" } );
     });
-  } else if (tokens[0] === 'zbstart') {
+  } else if (command === 'zbstart') {
     return startGame(tokens, context, cb);
-  } else if (tokens[0] === 'zbrestart') {
+  } else if (command === 'zbrestart') {
     return endGame(tokens, context, function(err, result) {
       return startGame(tokens, context, cb);
     });
-  } else if (tokens[0] === 'zbend') {
+  } else if (command === 'zbend') {
     return endGame(tokens, context, cb);
   } else {
     return cb(null, null);
