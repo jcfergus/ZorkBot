@@ -5,7 +5,7 @@ var ifvms = require('ifvms');
 // If trigger word has been configured on Slack, only messages starting with
 // that trigger word will be sent
 
-var commands = [ 'zbhelp', 'zblist', 'zbstart', 'zbrestart', 'zbend' ];
+const COMMANDS = [ 'zbhelp', 'zblist', 'zbstart', 'zbrestart', 'zbend' ];
 
 function startGame(tokens, context, cb) {
   var game = tokens[1];
@@ -97,16 +97,21 @@ function doCommand(tokens, context, cb) {
 }
 
 function getUserGame(context, cb) {
+  
+  var username = context.body.user_name;
+  if (!username) {
+    // No username was sent.  Shouldn't happen but good to check.
+    return cb(null, null);
+  }
+  
+  console.log("Username: " + username);
+  
   context.storage.get(function(err, data) {
     if (err) {
       return cb(err);
     }
-
-    var username = context.body.user_name;
-    if (!username) {
-      // No username was sent.  Shouldn't happen but good to check.
-      return cb(null, null);
-    }
+    
+    console.log("Saves: " + util.inspect(data.saves));
 
     if (Object.keys(data.saves).indexOf(username) == -1) {
       // No entry in the saves object == no saved game.
@@ -137,13 +142,26 @@ module.exports = function (context, done) {
 
   var tokens = cmd.trim().toLowerCase().split(" ");
 
-  if (commands.indexOf(tokens[0]) != -1) {
-    // This is our command to handle.  
+  // There are a few commands, listed in COMMANDS, that are specific to us.
+  // We'll first check to see if the user sent one of those commands.
+  if (COMMANDS.indexOf(tokens[0]) != -1) {
+    // Yep, got an internal command.  Let's handle it.
     console.log("Got command: " + tokens[0]);
 
-    return doCommand(tokens, context, done);
+    return doCommand(tokens, context, function(err, message) {
+      if (err) {
+        return done(err);
+      }
+
+      // IFF we started a new game, then we don't want to return just yet.
+      // Otherwise we respond with a message.
+      if (message.next != "startgame") {
+        return done(err, message);
+      }
+    });
   }
 
+  // We didn't get an internal command, so let's see if the user has a game.
   return getUserGame(context, function (err, gamedata) {
     if (err) {
       return done(err);
@@ -154,6 +172,8 @@ module.exports = function (context, done) {
       return done(null, null);  // If the user doesn't have an active game, we're done.
     }
 
+    // Otherwise, we want to treat this as a game command.  We'll handle the odd case of a
+    // game start specifically within processGameCommand, since state will be equal to new.
     processGameCommand(context, gamedata, function(err, result) {
         if (err) {
           return done(err);
