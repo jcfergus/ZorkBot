@@ -47,7 +47,7 @@ function startGame(tokens, context, cb) {
 function endGame(tokens, context, cb) {
   var username = context.body.user_name;
 
-  context.storage.get(function(err, data) {
+  return context.storage.get(function(err, data) {
     if (err) {
       return cb(err);
     }
@@ -65,9 +65,6 @@ function endGame(tokens, context, cb) {
     
     return cb(null, { text: "No game to end!"} );
   });
-  
-  var game = "zork";
-  return cb(null, { text: "Game ended!", game: game });
 }
 
 function doCommand(tokens, context, cb) {
