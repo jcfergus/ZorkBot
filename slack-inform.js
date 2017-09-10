@@ -115,11 +115,10 @@ function getUserGame(context, cb) {
 
     if (Object.keys(data.saves).indexOf(username) === -1) {
       // No entry in the saves object == no saved game.
-      console.log("No game.");
       return cb(null, null);
     }
     
-    return cb(null, data.saves['username']);
+    return cb(null, data.saves[username]);
   });
 }
 
