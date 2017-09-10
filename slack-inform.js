@@ -30,7 +30,7 @@ function startGame(tokens, context, cb) {
 
 
     data.saves[username] = {
-      state: "",
+      state: "new",
       game: game
     };
 
